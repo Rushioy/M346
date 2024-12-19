@@ -3,47 +3,68 @@ IN_BUCKET="csv-in-bucket-$DATE"
 OUT_BUCKET="json-out-bucket-$DATE"
 LAMBDA_NAME="csv-to-json-converter-$DATE"
 REGION=$(aws configure get region)
-ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 
-# Create Lambda Function
+
+# create Lambda Function
 cd LambdaCSVtoJson/src/LambdaCSVtoJson
 dotnet lambda deploy-function \
     --function-role Labrole \
     --environment-variables OUT_BUCKET=$OUT_BUCKET \
-    $LAMBDA_NAME || { echo "Error: Failed to deploy Lambda function"; exit 1; }
+    $LAMBDA_NAME
 
-# Check if Lambda script exists
-if [ ! -f "csv_to_json.js" ]; then
+# Überprüfen, ob csv_to_json.js existiert
+if [ ! -f $? ]; then
     echo "Error: lambda not found!"
     exit 1
 fi
 
-# Create S3 Input Bucket
-echo "AWS S3 Input Bucket erstellen..."
-aws s3 mb s3://$IN_BUCKET --region $REGION || { echo "Error: Failed to create input bucket"; exit 1; }
 
-echo "S3 Input Bucket erstellt: $IN_BUCKET"
 
-# Create S3 Output Bucket
-echo "AWS S3 Output Bucket erstellen..."
-aws s3 mb s3://$OUT_BUCKET --region $REGION || { echo "Error: Failed to create output bucket"; exit 1; }
 
-echo "S3 Output Bucket erstellt: $OUT_BUCKET"
+# S3 Input Bucket erstellen
+echo "AWS S3-Input Bucket erstellen..."
+aws s3 mb s3://$INPUT_BUCKET --region $REGION
+
+if [ -f $?]; then
+    echo "S3- Input Bucket erstellt: $INPUT_BUCKET"
+
+    else 
+        echo "S3-Input Bucket wurde nicht erstellt"
+    fi
+
+
+
+
+
+
+# S3 Output Bucket erstellen
+echo "AWS S3-Output Bucket erstellen..."
+aws s3 mb s3://$OUTPUT_BUCKET --region $REGION
+
+f [ -f $?]; then
+    echo "S3- Output Bucket erstellt: $OUTPUT_BUCKET"
+
+    else 
+        echo "S3-Input Bucket wurde nicht erstellt"
+    fi
 
 echo "S3 Buckets erfolgreich erstellt: $IN_BUCKET und $OUT_BUCKET"
 
-# Add Lambda Trigger
-echo "Ausloeser erstellen fuer $IN_BUCKET..."
+
+# trigger erstellen fuer lambda
+
+echo "Ausloesser erstellen fuer $INPUT_BUCKET..."
 aws lambda add-permission \
     --function-name $LAMBDA_NAME \
     --statement-id "s3invoke-$DATE" \
     --action "lambda:InvokeFunction" \
     --principal s3.amazonaws.com \
-    --source-arn arn:aws:s3:::$IN_BUCKET \
+    --source-arn arn:aws:s3:::$INPUT_BUCKET \
     --region $REGION || { echo "Warning: Failed to add Lambda permission"; }
 
+
 aws s3api put-bucket-notification-configuration \
-    --bucket $IN_BUCKET \
+    --bucket $BUCKET_NAME \
     --notification-configuration "{
         \"LambdaFunctionConfigurations\": [
             {
@@ -58,11 +79,12 @@ aws s3api put-bucket-notification-configuration \
                 }
             }
         ]
-    }" || { echo "Error: Failed to configure bucket notification"; exit 1; }
+    }"
 
-if [ $? -eq 0 ]; then
-    echo "Trigger fuer $LAMBDA_NAME erstellt."
-else 
-    echo "Trigger $LAMBDA_NAME wurde nicht erstellt."
-    exit 1
-fi
+#check if trigger is build
+f [ -f $?]; then
+    echo "Trigger fuer $LAMBDA_NAME erstellt.."
+
+    else 
+        echo "Trigger $LAMBDA_NAME wurde nicht erstellt"
+    fi

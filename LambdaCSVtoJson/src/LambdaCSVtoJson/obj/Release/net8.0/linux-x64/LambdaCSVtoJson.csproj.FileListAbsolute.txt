@@ -1,0 +1,6 @@
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/obj/Release/net8.0/linux-x64/LambdaCSVtoJson.csproj.AssemblyReference.cache
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/obj/Release/net8.0/linux-x64/LambdaCSVtoJson.GeneratedMSBuildEditorConfig.editorconfig
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/obj/Release/net8.0/linux-x64/LambdaCSVtoJson.AssemblyInfoInputs.cache
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/obj/Release/net8.0/linux-x64/LambdaCSVtoJson.AssemblyInfo.cs
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/obj/Release/net8.0/linux-x64/LambdaCSVtoJson.csproj.CoreCompileInputs.cache
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/obj/Release/net8.0/linux-x64/LambdaCSVtoJson.sourcelink.json
