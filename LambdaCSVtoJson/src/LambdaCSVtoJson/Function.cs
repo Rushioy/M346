@@ -1,29 +1,28 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.S3Events;
 using Amazon.S3;
-using Amazon.S3.Model;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using CsvHelper;
+using Newtonsoft.Json;
 using System.Globalization;
+using Amazon.Lambda.Serialization.Json;
+using Amazon.Lambda.Serialization.SystemTextJson;
+
+
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
+
 
 namespace CsvToJsonLambda
 {
     public class Function
     {
         private readonly IAmazonS3 _s3Client;
-        private readonly string outputBucketName = Environment.GetEnvironmentVariable("OUTPUT_BUCKET");
 
-        public Function()
-        {
-            _s3Client = new AmazonS3Client();
-        }
+        public Function() : this(new AmazonS3Client()) { }
 
         public Function(IAmazonS3 s3Client)
         {
@@ -32,48 +31,47 @@ namespace CsvToJsonLambda
 
         public async Task FunctionHandler(S3Event evnt, ILambdaContext context)
         {
-            var record = evnt.Records?[0];
-            if (record == null) return;
+            var record = evnt.Records?[0].S3;
+            if (record == null)
+            {
+                context.Logger.LogLine("No S3 event record found.");
+                return;
+            }
 
-            string inputBucket = record.S3.Bucket.Name;
-            string inputKey = record.S3.Object.Key;
+            string sourceBucket = record.Bucket.Name;
+            string sourceKey = record.Object.Key;
+
+            string destinationBucket = Environment.GetEnvironmentVariable("DEST_BUCKET");
+            string destinationKey = Path.ChangeExtension(sourceKey, ".json");
 
             try
             {
-                // CSV-Datei aus dem Input-Bucket lesen
-                var getRequest = new GetObjectRequest
-                {
-                    BucketName = inputBucket,
-                    Key = inputKey
-                };
-
-                using (var response = await _s3Client.GetObjectAsync(getRequest))
+                using (var response = await _s3Client.GetObjectAsync(sourceBucket, sourceKey))
                 using (var responseStream = response.ResponseStream)
                 using (var reader = new StreamReader(responseStream))
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-                    // CSV-Daten lesen und in JSON konvertieren
                     var records = csv.GetRecords<dynamic>();
-                    string jsonContent = JsonSerializer.Serialize(records, new JsonSerializerOptions { WriteIndented = true });
+                    string jsonContent = JsonConvert.SerializeObject(records, Formatting.Indented);
 
-                    // JSON-Datei im Output-Bucket speichern
-                    string outputKey = inputKey.Replace(".csv", ".json");
-
-                    var putRequest = new PutObjectRequest
+                    using (var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonContent)))
                     {
-                        BucketName = outputBucketName,
-                        Key = outputKey,
-                        ContentBody = jsonContent,
-                        ContentType = "application/json"
-                    };
+                        var uploadRequest = new Amazon.S3.Model.PutObjectRequest
+                        {
+                            BucketName = destinationBucket,
+                            Key = destinationKey,
+                            InputStream = memoryStream
+                        };
 
-                    await _s3Client.PutObjectAsync(putRequest);
-                    context.Logger.LogLine($"Datei erfolgreich konvertiert: {inputKey} -> {outputKey}");
+                        await _s3Client.PutObjectAsync(uploadRequest);
+                    }
                 }
+
+                context.Logger.LogLine($"Successfully converted {sourceKey} to {destinationKey}");
             }
             catch (Exception e)
             {
-                context.Logger.LogLine($"Fehler beim Verarbeiten der Datei: {e.Message}");
+                context.Logger.LogLine($"Error processing file {sourceKey}: {e.Message}");
                 throw;
             }
         }

@@ -38,13 +38,29 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AWSSDK.S3": {
+              "target": "Package",
+              "version": "[3.7.3.2, )"
+            },
             "Amazon.Lambda.Core": {
               "target": "Package",
               "version": "[2.5.0, )"
             },
+            "Amazon.Lambda.S3Events": {
+              "target": "Package",
+              "version": "[3.0.0, )"
+            },
             "Amazon.Lambda.Serialization.SystemTextJson": {
               "target": "Package",
               "version": "[2.4.4, )"
+            },
+            "CsvHelper": {
+              "target": "Package",
+              "version": "[30.0.1, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.1, )"
             }
           },
           "imports": [

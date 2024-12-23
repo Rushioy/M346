@@ -1,0 +1,11 @@
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/LambdaCSVtoJson.deps.json
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/LambdaCSVtoJson.runtimeconfig.json
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/LambdaCSVtoJson.pdb
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/Amazon.Lambda.Core.dll
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/Amazon.Lambda.S3Events.dll
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/Amazon.Lambda.Serialization.SystemTextJson.dll
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/AWSSDK.Core.dll
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/AWSSDK.S3.dll
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/CsvHelper.dll
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/Newtonsoft.Json.dll
+/home/vmadmin/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson/publish/LambdaCSVtoJson.dll

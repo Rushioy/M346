@@ -1,0 +1,14 @@
+{
+    "Records": [
+        {
+            "s3": {
+                "bucket": {
+                    "name": "csv-to-json-in-bucket-1734904545"
+                },
+                "object": {
+                    "key": "testt.csv"
+                }
+            }
+        }
+    ]
+}
