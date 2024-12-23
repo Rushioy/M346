@@ -12,16 +12,30 @@ echo "Debugging: Input Bucket: $IN_BUCKET"
 echo "Debugging: Output Bucket: $OUT_BUCKET"
 
 echo "### S3-Buckets erstellen ###"
-aws s3api create-bucket --bucket $IN_BUCKET
-if [ $? -ne 0 ]; then
-    echo "Fehler: Input-Bucket konnte nicht erstellt werden: $IN_BUCKET"
-    exit 1
-fi
+if [ "$AWS_REGION" == "us-east-1" ]; then
+    aws s3api create-bucket --bucket $IN_BUCKET
+    if [ $? -ne 0 ]; then
+        echo "Fehler: Input-Bucket konnte nicht erstellt werden: $IN_BUCKET"
+        exit 1
+    fi
 
-aws s3api create-bucket --bucket $OUT_BUCKET
-if [ $? -ne 0 ]; then
-    echo "Fehler: Output-Bucket konnte nicht erstellt werden: $OUT_BUCKET"
-    exit 1
+    aws s3api create-bucket --bucket $OUT_BUCKET
+    if [ $? -ne 0 ]; then
+        echo "Fehler: Output-Bucket konnte nicht erstellt werden: $OUT_BUCKET"
+        exit 1
+    fi
+else
+    aws s3api create-bucket --bucket $IN_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
+    if [ $? -ne 0 ]; then
+        echo "Fehler: Input-Bucket konnte nicht erstellt werden: $IN_BUCKET"
+        exit 1
+    fi
+
+    aws s3api create-bucket --bucket $OUT_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
+    if [ $? -ne 0 ]; then
+        echo "Fehler: Output-Bucket konnte nicht erstellt werden: $OUT_BUCKET"
+        exit 1
+    fi
 fi
 
 echo "### IAM-Rolle verwenden ###"

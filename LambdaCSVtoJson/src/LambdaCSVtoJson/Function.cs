@@ -8,13 +8,9 @@ using Amazon.S3;
 using CsvHelper;
 using Newtonsoft.Json;
 using System.Globalization;
-using Amazon.Lambda.Serialization.Json;
 using Amazon.Lambda.Serialization.SystemTextJson;
 
-
-
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
-
 
 namespace CsvToJsonLambda
 {
@@ -42,6 +38,12 @@ namespace CsvToJsonLambda
             string sourceKey = record.Object.Key;
 
             string destinationBucket = Environment.GetEnvironmentVariable("DEST_BUCKET");
+            if (string.IsNullOrEmpty(destinationBucket))
+            {
+                context.Logger.LogLine("Destination bucket not found in environment variables.");
+                return;
+            }
+
             string destinationKey = Path.ChangeExtension(sourceKey, ".json");
 
             try
@@ -60,7 +62,8 @@ namespace CsvToJsonLambda
                         {
                             BucketName = destinationBucket,
                             Key = destinationKey,
-                            InputStream = memoryStream
+                            InputStream = memoryStream,
+                            ContentType = "application/json"
                         };
 
                         await _s3Client.PutObjectAsync(uploadRequest);
@@ -72,6 +75,7 @@ namespace CsvToJsonLambda
             catch (Exception e)
             {
                 context.Logger.LogLine($"Error processing file {sourceKey}: {e.Message}");
+                context.Logger.LogLine(e.StackTrace);
                 throw;
             }
         }

@@ -1,49 +1,123 @@
-# AWS Lambda Empty Function Project
+# Projekt 346: Lambda Funktion - CSV zu JSON Konvertierungsdienst
 
-This starter project consists of:
-* Function.cs - class file containing a class with a single function handler method
-* aws-lambda-tools-defaults.json - default argument settings for use with Visual Studio and command line deployment tools for AWS
+## **Projekt Aufbau** ##
 
-You may also have a test project depending on the options selected.
+### **Ziel**:
+Dieses Projekt zielt darauf ab, eine AWS LAmbda Funktion in C# zu implementieren, die CSV-Dateien aus einem S3-Bucket lieest, in JSON-Dateien umwandelt und in einem anderen S3-Bucket speichert. Es dient als praktisches Beispiel, um AWS Lambda,S3, IAM-Berechtigungen und die Automatisierung mit Bash-Skripten zu erlernen.
 
-The generated function handler is a simple method accepting a string argument that returns the uppercase equivalent of the input string. Replace the body of this method, and parameters, to suit your needs. 
+### Technologie
 
-## Here are some steps to follow from Visual Studio:
+-AWS S3
+-AWS Lambda
+-AWS CLI
+-Dotnet - C#
+-AWS IAM
 
-To deploy your function to AWS Lambda, right click the project in Solution Explorer and select *Publish to AWS Lambda*.
+## Anleitung
 
-To view your deployed function open its Function View window by double-clicking the function name shown beneath the AWS Lambda node in the AWS Explorer tree.
+### **1. Voraussetzung**
 
-To perform testing against your deployed function use the Test Invoke tab in the opened Function View window.
+- AWS CLI muss auf dem lokalen Rehcner installiert sein, den musst du bei jeder neu anmeldung unter Credentials ändern.
+- AWS Konto haben
 
-To configure event sources for your deployed function, for example to have your function invoked when an object is created in an Amazon S3 bucket, use the Event Sources tab in the opened Function View window.
+### **2. AWS CLI Installation:**
+Bitte der Reihe nach eingeben:
+sudo apt update
+sudo apt install curl
 
-To update the runtime configuration of your deployed function use the Configuration tab in the opened Function View window.
+rest von der Anleitung unter: https://gbssg.gitlab.io/m346/iac-aws-cli/
 
-To view execution logs of invocations of your function use the Logs tab in the opened Function View window.
+unter .aws muss man bei jedem Start die Datei Credentials neu anpassen. das sieht man auch wenn man unter diesem Link geht.
 
-## Here are some steps to follow to get started from the command line:
 
-Once you have edited your template and code you can deploy your application using the [Amazon.Lambda.Tools Global Tool](https://github.com/aws/aws-extensions-for-dotnet-cli#aws-lambda-amazonlambdatools) from the command line.
 
-Install Amazon.Lambda.Tools Global Tools if not already installed.
-```
-    dotnet tool install -g Amazon.Lambda.Tools
-```
+### **3. C# Lambda-Function
+Schritt für Schritt Anleitung:
 
-If already installed check if new version is available.
-```
-    dotnet tool update -g Amazon.Lambda.Tools
-```
+aws cli: 
+Überprüfen Sie, ob die aws cli in der Version >= 2.x.x installiert ist. 
+aws --version 
 
-Execute unit tests
-```
-    cd "LambdaCSVtoJOSN/test/LambdaCSVtoJOSN.Tests"
-    dotnet test
-```
+.NET 8 
+Prüfen Sie, ob der dotnet sdk 8.0.x installiert ist. 
+dotnet --list-sdks 
+Falls dotnet sdk 8.0.x nicht aufgelistet wird, installieren sie ihn wie folgt: 
+sudo apt-get update 
+sudo apt-get install -y dotnet-sdk-8.0 
 
-Deploy function to AWS Lambda
-```
-    cd "LambdaCSVtoJOSN/src/LambdaCSVtoJOSN"
-    dotnet lambda deploy-function
-```
+Amazon Tools 
+Installieren Sie die neusten Amazon Lambda Templates: 
+dotnet new --install Amazon.Lambda.Templates 
+
+Installieren Sie nun die Amazon Lambda Tools.  
+dotnet tool install -g Amazon.Lambda.Tools 
+
+Falls eine Fehlermeldung mitteilt, dass die Tools bereist installiert sind, führen Sie einen Update durch. 
+dotnet tool update -g Amazon.Lambda.Tools
+
+Ordnerstruktur:
+/aws
+└── /M346
+    └── /LambdaCSVtoJson
+        ├── /src
+        │   └── /LambdaCSVtoJson
+        │       ├── Function.cs        # Lambda-Funktion
+        │       ├── LambdaCSVtoJson.csproj # Projektdatei
+        ├── testt.csv                  # Testdatei
+        └── init3.sh                   # Skript zur Automatisierung
+
+So sieht meine Ordnerstruktur aus nach dem ALles funktioniert hat. Es hat noch mehr Dateien, aber auf diesen habe ich am meisten gearbeitet.
+
+
+### ** 4. Implementierung:**
+
+Wichitg als Role LabRole nehmen sonst geht es nicht.
+ 
+Init3.sh:
+- Erstellt die Buckets
+- Erstellt die Lambda Fuktion
+- Erstellt einen S3 Trigger, falls eine Datei im in Bucket ist
+
+### ** 5. Skript ausführen:**
+cd ~/aws/M346/LambdaCSVtoJson/src/LambdaCSVtoJson
+
+chmod +x init3.sh
+
+./init3.sh
+
+Das Skript erstellt:
+
+Zwei S3-Buckets (Input und Output).
+Eine AWS Lambda-Funktion, die auf neue Objekte im Input-Bucket reagiert.
+Eine Benachrichtigungskonfiguration, die die Lambda-Funktion auslöst.
+
+### ** 6. Testen:**
+Testdatei hochladen: Laden Sie eine CSV-Datei in den Input-Bucket hoch:
+aws s3 cp /home/vmadmin/aws/M346/LambdaCSVtoJson/testt.csv s3://csv-to-json-in-bucket-<Timestamp>
+
+Datei nachschauen ob im in Bucket
+aws s3 ls s3://csv-to-json-in-bucket-<Timestamp>
+
+Ausgabe überprüfen: Sehen Sie nach, ob die JSON-Datei im Output-Bucket erstellt wurde:
+aws s3 ls s3://csv-to-json-out-bucket-<TIMESTAMP>
+
+Logs prüfen: Überprüfen Sie die Lambda-Ausgabe in den CloudWatch-Logs:
+
+aws logs describe-log-streams --log-group-name "/aws/lambda/CsvToJsonLambda" --order-by LastEventTime --descending
+aws logs get-log-events --log-group-name "/aws/lambda/CsvToJsonLambda" --log-stream-nam
+
+
+## ** 7. Reflexion:**
+
+### **Challenge:**
+
+Meine grösste Herausforderung war die Rolle und dass beim out Bucket das json datei war, ich habe sehr lange ausprobiert. Aber es funktionierte leider nicht. Das war das grösste Problem. 
+
+### **Besser machen:**
+
+Anleitung schon von Anfang an schreiben. Damit man nicht alles nachholen muss. 
+
+### **Zukünftige Verbesserung:**
+
+- Mehr über IAM recherchieren
+- Lambda Funktion
